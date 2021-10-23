@@ -970,7 +970,7 @@ function OnLoad()
 		LoadFromCloud( window.location.search.substring( 1 ) );
 		window.history.replaceState( null, "", window.location.pathname );  /* Remove query string from URL */
 	} else {
-		LoadSampleProgram( 'palindrome', 'Default program', true );
+		LoadSampleProgram( '1+0=1', 'Default program', true );
 		SetStatusMessage( 'Load or write a Turing machine program and click Run!' );
 	}
 }
