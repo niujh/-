@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="turing.css" rel="stylesheet" type="text/css">
+  <link href="textarea.css" rel="stylesheet" type="text/css">
+  <title>
+    图灵机模拟器
+  </title>
+  <script type="text/javascript" defer="defer" src="jquery-1.11.1.min.js"></script>
+  <!--[if lte IE 9]>
+   <script type="text/javascript" src="polyfills.js"></script>
+   <script type="text/javascript" src="json2.js"></script>
+  <![endif]-->
+  <!--[if ltS IE 8]>
+   <link href="ie-fixes.css" rel="stylesheet" type="text/css">
+  <![endif]-->  <!-- Conditional comments for old IE versions. Adjust or disable line highlighting and load Javscript polyfills if needed for old IE versions. !-->
+  <script type="text/javascript" defer="defer" src="jsturing.js"></script>
+ </head>
+
+ <body onload="OnLoad();">
+  <div id="Header">
+   <h1>图灵机模拟器</h1>
+   <div id="IntroText">
+    使用方法:<br>
+    <ol>
+     <li>
+      <a href="#LoadMenu" onclick="$('#LoadMenu').slideDown();">加载一个示例程序</a>, 或者在图灵机程序区自己实现一个.  点击查看<a href="#SyntaxInfo">下面的语法</a>.
+     </li>
+     <li>
+      在“输入”区域输入内容-这将作为机器的输入写入磁带。单击“重置”以初始化机器。
+     </li>
+     <li>
+      单击“运行”启动图灵机并运行它，直到它停止（如果有）。
+      单击“重置”将图灵机恢复到其初始状态，以便可以再次运行。
+     </li>
+     <li>
+      单击“重置”将图灵机恢复到其初始状态，以便可以再次运行。
+     </li>
+    </ol>
+   </div>
+  </div>
+  <div id="Machine">
+   <div id="MachineTapeContainer">
+    <div class="BoxTitle">磁带</div>
+    <div id="MachineTape" class="MachineStatusBox" title="This is the Turing machine's tape. The head position is indicated by the highlighted cell and arrow.">
+     <!-- the following pre elements must be on a single line with no whitespace between them !-->
+     <div id="RunningTapeDisplay" aria-live="polite"><div id="TapeValues"><pre id="LeftTape" class="tape"></pre><div id="ActiveTapeArea"><pre id="ActiveTape" class="tape"> </pre><div id="MachineHead"><div class="HeadTop"></div><div class="HeadBody">磁头</div></div></div><pre id="RightTape" class="tape"></pre></div></div>
+    </div> <!-- div MachineTape !-->
+   </div>
+
+   <div id="MachineMiddleSection">
+    <div id="MachineStatusMsgWrapper" aria-live="polite">
+      <pre id="MachineStatusMsgText">
+      </pre> <!-- div MachineStatusMsgText !-->
+      <div id="MachineStatusMsgBg"></div>
+    </div>
+
+    <div id="MachineStateContainer" class="MachineStatusContainer" title="This is the Turing machine's 当前状态" aria-live="polite">
+     <div class="BoxTitle">当前状态</div>
+     <div id="MachineState" class="MachineStatusBox">
+ - 
+     </div> <!-- div MachineState !-->
+    </div> <!-- div MachineStateContainer !-->
+
+    <div id="MachineStepsContainer" class="MachineStatusContainer" title="This is the number of steps executed by the machine since starting" aria-live="polite">
+     <div class="BoxTitle">已运行步数</div>
+     <div id="MachineSteps" class="MachineStatusBox">
+ - 
+     </div> <!-- div MachineSteps !-->
+    </div> <!-- div MachineStepsContainer !-->
+   </div> <!-- div MachineMiddleSection !-->
+   <div class="cleardiv"></div>
+
+   <div id="MachineLowerSection">
+    <div id="MachineLowerSection2">
+
+     <div id="MachineProgramContainer">
+      <div class="BoxTitle">图灵机程序</div>
+      <div id="MachineProgramBlock">
+       <div id="MachineProgramBlock2">
+        <div id="SourceContainer">
+         <div id="SourceBackground">
+         </div>
+         <div id="tabackground">
+<!-- no indenting, because text inside textarea is verbatim !-->
+<textarea id="Source" wrap="off" oninput="TextareaChanged();" onscroll="UpdateTextareaScroll();" onblur="Compile();" title="This is the Turing machine's program. See documentation below for syntax.">
+; Load a program from the menu or write your own!
+</textarea>
+         </div>
+        </div>
+        <div id="SyntaxMsg"></div>
+       </div> <!-- div MachineProgramBlock2 !-->
+      </div> <!-- div MachineProgramBlock !-->
+     </div> <!-- div MachineProgramContainer !--> 
+
+     <div id="MachineControlBlock">
+      <div class="BoxTitle">控制台</div>
+      <div id="MachineButtonsBlock">
+       <button id="RunButton" onclick="RunButton();" title="Start the machine running">运行</button> <!-- &#x25b8; !--> <!-- Unicode 'play' symbol !-->
+       <span title="If enabled, runs as fast as your browser &amp; computer allow">
+        <input type="checkbox" id="SpeedCheckbox" onclick="SpeedCheckbox();">全速运行
+       </span>
+       <br>
+       <button id="StopButton" onclick="StopButton();" disabled="disabled" title="Pause the machine when running">暂停</button><br> <!-- &#x25fe; !-->
+       <button id="UndoButton" onclick="Undo();" title="Undo one machine step" style="float: right;">后退一步</button>
+       <button id="StepButton" onclick="StepButton();" title="Run the machine for a single step and the pause">前进一次</button><br> <!-- &#x25b8;&#x2759; !-->
+       <button id="ResetButton" onclick="ResetButton();" title="Reset the machine and tape to the initial state">重置</button> <!-- &#x2759;&#x23ea; !-->
+       <div id="InitialTapeDisplay"  title="This initial data will be loaded on the tape when the machine starts">
+        初始化输入:<input type="text" id="InitialInput" value="" onchange="ShowResetMsg(true);">
+       </div>
+       <div style="font-size: small;">
+        <a href="javascript:" onclick="$('#AdvancedOptions').slideToggle();" title="Show advanced machine options">高级选项</a>
+       </div>
+       <div id="AdvancedOptions" style="display: none; margin-top: 0.25em;">
+        <div id="InitialStateDisplay"  title="This is the state that the machine will start in" style="margin-bottom: 0.5em;">
+         初始状态:<input type="text" id="InitialState" value="0" onchange="ShowResetMsg(true);">
+        </div>
+        <div title="Choose between different Turing machine variants">
+         机器变量:
+         <select onchange="VariantChanged(true);" id="MachineVariant">
+          <option value="0" selected="selected">标准</option>
+          <option value="1">半无限磁带</option>
+          <option value="2">不确定</option>
+         </select>
+         <div id="MachineVariantDescription" style="font-size: small; font-style: italic;"></div>
+         <span style="font-size: x-small;"><a href="javascript:" onclick="$('#AdvancedOptions').hide();">[Close]</a></span>
+        </div>
+       </div> 
+       <div id="ResetMessage">Changes will take effect when the machine is reset.</div>
+       <br>
+       <br>
+       <div id="LoadBlock">
+        <a href="javascript:" onclick="$('#LoadMenu').slideToggle();" title="Load a pre-prepared example program">加载示例程序</a>
+        <div id="LoadMenu">
+         <ul>
+          
+          <li><a href="javascript:" onclick="LoadSampleProgram('1+0=1', '1+0=1');">1+0=1</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('palindrome', 'Palindrome detector');">Palindrome detector</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('binaryadd', 'Binary addition machine');">Binary addition</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('binarymult', 'Binary multiplication machine');">Binary multiplication</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('bin2dec', 'Binary to decimal conversion machine');">Binary to decimal conversion</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('turingsequence', 'Turing\'s sequence machine');">Turing's sequence machine</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('parentheses', 'Parentheses checker machine');">Parentheses checker</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('reversepolishboolean', 'Reverse Polish Boolean calculator');">Reverse Polish Boolean calculator</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('primetest', 'Primality test machine');">Primality test</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('4statebeaver', '4-state busy beaver');">4-state busy beaver</a></li>
+          <li><a href="javascript:" onclick="LoadSampleProgram('universal', 'Universal Turing machine');">Universal Turing machine</a></li>
+          <!--<li><a href="javascript:" onclick="LoadSampleProgram('error', 'Error machine');">Error</a></li>!--> <!-- for testing !-->
+         </ul>
+         <span style="font-size: x-small;"><a href="javascript:" onclick="$('#LoadMenu').hide();">[Close]</a></span>
+        </div>
+       </div> <!-- div inputProg !-->
+       <br>
+       <a href="javascript:" onclick="SaveToCloud();" title="Save your machine to the cloud for sharing or bookmarking">存入云端</a>
+       <!--...<a href="javascript:" onclick="testsave(true);">test ok</a>...<a href="javascript:" onclick="testsave(false);">test error</a>!--> <!-- for testing !-->
+       <div id="SaveStatus">
+        <div id="SaveStatusFg">
+         <div id="SaveStatusMsg"></div>
+         <span style="font-size: x-small;"><a href="javascript:" onclick="ClearSaveMessage();">[Close]</a></span>
+        </div> 
+        <div id="SaveStatusBg"></div>
+       </div>
+       <!--<br><button id="DebugButton" onclick="x();">Debug</button><br>!-->
+      </div> <!-- div MachineButtonsBlock !-->
+     </div> <!-- div MachineControlBlock !-->
+
+
+    </div> <!-- div MachineLowerSection2 !-->
+   </div> <!-- div MachineLowerSection !-->
+
+  </div> <!-- div Machine !-->
+  <div id="SyntaxInfo">语法:
+   <ul>
+    <li>每行应包含： '<code>&lt;当前状态&gt; &lt;当前符号&gt; &lt;新符号&gt; &lt;移动方向&gt; &lt;新状态&gt;</code>'.</li>
+    <li>你可以用任何数字或单词来表示 <code>&lt;当前状态&gt;</code> 和 <code>&lt;新状态&gt;</code>, 例如. <code>10, a, state1</code>. 状态是区分大小写。.</li>
+    <li>您几乎可以使用任何字符来进行编辑 <code>&lt;当前符号&gt;</code> 和 <code>&lt;新符号&gt;</code>, 或者使用 '<code>_</code>' 来表示空格. 符号是区分大小写的.
+      <br>
+      你不能用 '<code>;</code>', '<code>*</code>', '<code>_</code>' 或者空格键作为符字符.
+    </li>
+    <li><code>&lt;移动方向&gt;</code> 应该是 '<code>l</code>', '<code>r</code>' 或者 '<code>*</code>', 分别表示 '左移', '右移' 或者 '不移动'.</li>
+    <li>在 '<code>;</code>' 之后的所有字符都看作注释，不执行.</li>
+    <li>当机器达到以下任何状态时停止 '<code>halt</code>', 例如. <code>halt, halt-accept</code>.</li>
+   </ul>
+   并且:
+   <ul>
+    <li>'<code>*</code>' 可以被当作通配符，以匹配 <code>&lt;当前符号&gt;</code> 或者 <code>&lt;当前状态&gt;</code>.</li>
+    <li>'<code>*</code>' 表示 <code>&lt;新符号&gt;</code> 或者 <code>&lt;新状态&gt;</code> 时表示‘没有变换’.</li>
+    <li>'<code>!</code>' 可以在一行的末尾设置断点，例如 '<code>1 a b r 2 !</code>'. 执行此行后，机器将自动暂停。.</li>
+    <li>可以使用指定头部的起始位置 '<code>*</code>' 在初始输入中.</li>
+   </ul>
+  </div>
+  <div id="AboutMenu">
+   <div id="AboutItemTech" class="AboutItem"><a href="javascript:" onclick="AboutMenuClicked('Tech');">Technical details</a></div>
+   -
+   <div id="AboutItemCopying" class="AboutItem"><a href="javascript:" onclick="AboutMenuClicked('Copying');">Copying</a></div>
+   -
+   <div id="AboutItemOld" class="AboutItem"><a href="javascript:" onclick="AboutMenuClicked('Old');">Previous version</a></div>
+   -
+   <div id="AboutItemContact" class="AboutItem"><a href="javascript:" onclick="AboutMenuClicked('Contact');">Feedback</a></div>
+   <div id="AboutContentContainer">
+    <div id="AboutContentTech" class="AboutContent">
+     The Turing machine simulator is written in Javascript/HTML, and uses <a href="http://jquery.com">jQuery</a>.  Saved machines are stored as Gists on <a href="https://gist.github.com/">GitHub</a>.  You can browse the code <a href="https://github.com/awmorp/jsturing">here on GitHub</a>.
+    </div>
+    <div id="AboutContentCopying" class="AboutContent">
+     Source code for this simulator is <a href="https://github.com/awmorp/jsturing">available on GitHub</a>.  You are welcome to download, copy, or adapt the code to your own needs.  If you are doing something interesting with it, I'd be happy to hear from you about it.
+    </div>
+    <div id="AboutContentOld" class="AboutContent">
+     The previous version of the Turing machine simulator is <a href="old/turing.html">still available here</a>.
+    </div>
+    <div id="AboutContentContact" class="AboutContent">
+     Please send any bug reports, feedback, suggestions, etc. to <a href="http://morphett.info/">Anthony Morphett</a>, awmorp @ gmail.com
+    </div>
+   </div>
+  </div>
+  <div class="Signature">
+   -- <a href="http://morphett.info/">Anthony Morphett</a> - awmorp @ gmail.com
+  </div>
+  <div id="debugOuter" class="DebugClass">
+   Debug: <button id="ClearDebugButton" onclick="ClearDebug();">clear</button>
+   <pre id="debug">
+   </pre> <!-- div debug !-->
+  </div> <!-- div debugOuter !-->
+ </body>
+</html>
